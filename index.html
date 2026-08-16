@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="theme-color" content="#11111b" />
+    <title>VN Prototype</title>
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <main class="game" aria-label="Сцена визуальной новеллы">
+      <header class="game__title">VN Prototype</header>
+      <div
+        class="sympathy"
+        role="progressbar"
+        aria-label="Уровень симпатии Alice"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="20"
+      >
+        <span class="sympathy__label">Sympathy: <strong>20/100</strong></span>
+        <span class="sympathy__track" aria-hidden="true">
+          <span class="sympathy__fill"></span>
+        </span>
+      </div>
+
+      <section class="scene" aria-label="Игровая сцена">
+        <div class="character character--state-1" aria-label="Состояние персонажа">
+          <span>Character</span>
+          <span class="character__state">State 1 — Distant</span>
+        </div>
+      </section>
+
+      <section class="dialogue" aria-live="polite">
+        <div class="dialogue__name">Alice</div>
+        <p class="dialogue__text">Привет. Я тебя раньше здесь не видела.</p>
+
+        <div class="answers" aria-label="Варианты ответа"></div>
+
+        <div class="result" hidden>
+          <strong class="result__title"></strong>
+          <p class="result__text"></p>
+          <button class="restart" type="button">Restart</button>
+        </div>
+      </section>
+
+      <button class="debug-toggle" type="button" aria-expanded="false">DEBUG</button>
+      <output class="debug-panel" hidden></output>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
