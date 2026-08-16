@@ -50,6 +50,45 @@ button {
   text-transform: uppercase;
 }
 
+.sympathy {
+  position: absolute;
+  z-index: 3;
+  top: clamp(14px, 2.3vw, 28px);
+  right: clamp(18px, 3vw, 42px);
+  width: clamp(145px, 18vw, 210px);
+}
+
+.sympathy__label {
+  display: block;
+  margin-bottom: 7px;
+  color: #c8c7d6;
+  font-size: clamp(0.72rem, 1.2vw, 0.88rem);
+  letter-spacing: 0.04em;
+  text-align: right;
+}
+
+.sympathy__label strong {
+  color: #f8f7ff;
+  font-variant-numeric: tabular-nums;
+}
+
+.sympathy__track {
+  display: block;
+  height: 5px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: #343442;
+}
+
+.sympathy__fill {
+  display: block;
+  width: 20%;
+  height: 100%;
+  border-radius: inherit;
+  background: #a09cae;
+  transition: width 300ms ease, background-color 300ms ease;
+}
+
 .scene {
   position: absolute;
   inset: 0 0 220px;
@@ -76,6 +115,26 @@ button {
   line-height: 1.65;
   text-align: center;
   text-transform: uppercase;
+  transition: background-color 300ms ease, border-color 300ms ease,
+    color 300ms ease;
+}
+
+.character--state-1 {
+  border-color: #736f81;
+  background: #292a39;
+  color: #aeacbf;
+}
+
+.character--state-2 {
+  border-color: #8e7aab;
+  background: #38314b;
+  color: #c9b9df;
+}
+
+.character--state-3 {
+  border-color: #ba86a7;
+  background: #543848;
+  color: #f0c6db;
 }
 
 .dialogue {
@@ -205,7 +264,9 @@ button {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .answers button {
+  .answers button,
+  .character,
+  .sympathy__fill {
     transition: none;
   }
 }

@@ -10,11 +10,24 @@
   <body>
     <main class="game" aria-label="Сцена визуальной новеллы">
       <header class="game__title">VN Prototype</header>
+      <div
+        class="sympathy"
+        role="progressbar"
+        aria-label="Уровень симпатии Alice"
+        aria-valuemin="0"
+        aria-valuemax="100"
+        aria-valuenow="20"
+      >
+        <span class="sympathy__label">Sympathy: <strong>20/100</strong></span>
+        <span class="sympathy__track" aria-hidden="true">
+          <span class="sympathy__fill"></span>
+        </span>
+      </div>
 
       <section class="scene" aria-label="Игровая сцена">
-        <div class="character" aria-label="Место для изображения персонажа">
+        <div class="character character--state-1" aria-label="Состояние персонажа">
           <span>Character</span>
-          <span>Placeholder</span>
+          <span class="character__state">State 1</span>
         </div>
       </section>
 
@@ -22,15 +35,7 @@
         <div class="dialogue__name">Alice</div>
         <p class="dialogue__text">Привет. Я тебя раньше здесь не видела.</p>
 
-        <div class="answers" aria-label="Варианты ответа">
-          <button type="button" data-answer="Привет! Я здесь впервые.">
-            Привет! Я здесь впервые.
-          </button>
-          <button type="button" data-answer="А ты всех здесь запоминаешь?">
-            А ты всех здесь запоминаешь?
-          </button>
-          <button type="button" data-answer="Не твоё дело.">Не твоё дело.</button>
-        </div>
+        <div class="answers" aria-label="Варианты ответа"></div>
       </section>
     </main>
 
