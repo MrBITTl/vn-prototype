@@ -1,90 +1,71 @@
-const INITIAL_SYMPATHY = 20;
-const INITIAL_TRUST = 25;
+const INITIAL_SYMPATHY = 35;
+const INITIAL_TRUST = 30;
+const MAX_CHOICES = 8;
+const EARLY_FAIL_MISTAKES = 4;
 
 const dialogueSteps = [
   {
-    line: "Привет. Я тебя раньше здесь не видела.",
+    line: "Новенький? Или хорошо маскируешься?",
     answers: [
-      ["Верно. Я обычно произвожу незабываемое первое впечатление.", "Смело. Посмотрим, переживёт ли впечатление вторую минуту.", 7, 1],
-      ["Я здесь впервые. Решил осмотреться без карты и здравого смысла.", "Самоирония — неплохой компас. Тогда добро пожаловать.", 6, 7],
-      ["А ты ведёшь учёт всех посетителей?", "Только подозрительных. Поздравляю, ты в списке.", 3, 0],
+      ["Я местная легенда", "Скромно. Уже смешно.", 8, 2],
+      ["Просто осматриваюсь", "Спокойный старт. Уважаю.", 5, 6],
+      ["А ты следишь за мной?", "Не льсти себе, детектив.", 3, 1],
     ],
   },
   {
+    line: "И что ты здесь ищешь?",
     answers: [
-      ["И что выдаёт во мне подозрительного?", "Слишком спокойный вид. Так обычно и начинаются приключения.", 4, 3],
-      ["Надеюсь, список хотя бы красиво оформлен.", "С наклейками и тревожной красной рамкой специально для тебя.", 7, 2],
-      ["Можешь сразу меня вычеркнуть.", "Могу. Но тогда разговор станет совсем коротким.", -4, -3],
+      ["Приключения без инструкции", "Вот это правильная ошибка.", 8, 4],
+      ["Хорошую компанию", "Уверенно. Возможно, повезло.", 6, 5],
+      ["Тебя, очевидно", "Слишком быстро. Притормози.", -7, -6, "pushy"],
     ],
   },
   {
+    line: "Допустим, я не прогнала тебя.",
     answers: [
-      ["Тогда оставь. Люблю эксклюзивные клубы.", "Взносы принимаю историями. Желательно не скучными.", 6, 2],
-      ["Честно говоря, я просто немного потерялся.", "Честность принята. Куда ты вообще собирался?", 1, 8],
-      ["Ты всегда так допрашиваешь людей?", "Нет. Некоторые сдаются ещё до второго вопроса.", 2, -2],
+      ["Запишу как победу", "Мелкую. Но заслуженную.", 8, 3],
+      ["Можем просто поболтать", "Без давления? Редкость.", 5, 8],
+      ["Ты сегодня прекрасна", "Мило. Один раз считается.", 6, 1, "compliment"],
     ],
   },
   {
+    line: "У тебя всегда такой план?",
     answers: [
-      ["Искал тихое место, но, кажется, нашёл интересное.", "Осторожнее: это почти комплимент.", 8, 1, "compliment"],
-      ["Понятия не имею. План был безупречен до момента выхода из дома.", "Знакомая стратегия. Удивительно, что мы оба ещё живы.", 6, 7],
-      ["Куда-нибудь, где меньше вопросов.", "Дверь ты видел. Я никого не удерживаю.", -9, -7],
+      ["Плана не пережил автобус", "Соболезную плану. Мне нравится.", 9, 7],
+      ["Импровизация надёжнее", "Опасная уверенность. Продолжай.", 7, 3],
+      ["Дай номер — расскажу", "Нет. И напор убавь.", -10, -9, "pushy"],
     ],
   },
   {
+    line: "Ладно. Чем меня удивишь?",
     answers: [
-      ["Раз уж я здесь, посоветуешь что-нибудь?", "Могу показать двор на крыше. Но это не экскурсия.", 2, 7],
-      ["Ты и есть самое интересное, что тут есть.", "Второй комплимент так быстро? Не расходуй весь запас сразу.", 7, -5, "compliment"],
-      ["Сам разберусь. Так веселее.", "Уважаю. Хотя заблудишься ты почти наверняка.", 3, 3],
+      ["Умею вовремя молчать", "Сильный и редкий навык.", 5, 9],
+      ["Шучу хуже, чем танцую", "Теперь я обязана это увидеть.", 9, 6],
+      ["Ещё одним комплиментом", "Запасной план так себе.", 4, -2, "compliment"],
     ],
   },
   {
+    line: "Кофе или прогулка?",
     answers: [
-      ["Показывай дорогу. Обещаю отставать всего на пару метров.", "Главное — не наступай на пятки. Я серьёзно.", 4, 4],
-      ["Не хочу навязываться. Просто объясни, как туда попасть.", "Неожиданно тактично. Ладно, всё же провожу.", 1, 10],
-      ["Отлично, теперь ты мой личный гид.", "Нет. И с таким подходом скоро снова станешь потерявшимся незнакомцем.", -7, -10],
+      ["Кофе. Я угощаю", "Договорились. Без фанфар.", 7, 5],
+      ["Прогулка без маршрута", "Хаос, но симпатичный.", 8, 3],
+      ["Решай за нас", "Нет уж. Имей мнение.", -7, -5, "rude"],
     ],
   },
   {
+    line: "Ты не так плох, как казалось.",
     answers: [
-      ["Здесь правда здорово. Ты часто сюда приходишь?", "Когда нужен воздух и минимум людей. Так что цени исключение.", 3, 7],
-      ["Неплохое место для тайных встреч.", "Уверенный заход. Немного подозрительный, но уверенный.", 8, -3],
-      ["И это всё? Я ожидал большего.", "Требовательный гость без приглашения — редкое сочетание.", -10, -6],
+      ["Это мой максимум", "Самоирония тебя спасает.", 9, 6],
+      ["Ты тоже ничего", "Нагло. Но честно.", 7, 3],
+      ["Я вообще-то идеален", "А вот и рекламная пауза.", -7, -4, "rude"],
     ],
   },
   {
+    line: "Последний шанс не всё испортить.",
     answers: [
-      ["Спасибо, что сделала исключение.", "Пожалуйста. Не заставляй меня о нём жалеть.", 2, 8],
-      ["Значит, я уже особенный? Быстро я.", "Не торопись. Пока ты просто статистическая погрешность.", 6, -1],
-      ["Можем и помолчать. Я не против.", "Редкий талант — не бояться пауз. Мне нравится.", 1, 9],
-    ],
-  },
-  {
-    answers: [
-      ["Расскажи о себе что-нибудь, чего нет в твоём досье.", "В моём досье? Ладно, это было неплохо. Я играю на барабанах.", 7, 4],
-      ["Можно спросить, почему тебе нравится это место?", "Можно. Здесь я впервые решила остаться в городе надолго.", 2, 10],
-      ["Ты очень красивая, особенно при таком свете.", "А вот и ещё один комплимент. Начинает звучать как тактика.", 5, -7, "compliment"],
-    ],
-  },
-  {
-    answers: [
-      ["На барабанах? Напомни никогда с тобой не спорить.", "Правильный вывод. У меня отличное чувство ритма и тяжёлые палочки.", 7, 3],
-      ["Похоже, у тебя с этим местом связана важная история.", "Да. Спасибо, что не стал выпытывать подробности.", 1, 9],
-      ["Я тоже умею производить шум. Соседи подтвердят.", "Наконец-то достойная квалификация. Создадим ужасную группу.", 8, 5],
-    ],
-  },
-  {
-    answers: [
-      ["Как назовём группу? «Статистическая погрешность»?", "Всё, название есть. Осталось научить тебя играть.", 8, 4],
-      ["Не обещаю талант, но обещаю не делать вид, что всё умею.", "Это внушает больше доверия, чем половина резюме музыкантов.", 2, 10],
-      ["Уверен, рядом со мной даже ты будешь звучать лучше.", "Самоуверенность только что перешла в тяжёлую стадию.", -6, -8],
-    ],
-  },
-  {
-    answers: [
-      ["Может, продолжим разговор за кофе? Без обязательной репетиции.", "Кофе звучит разумно. И да, репетицию я всё равно тебе припомню.", 6, 7],
-      ["Было приятно познакомиться. Оставлю следующий шаг за тобой.", "Хороший ход. Возможно, я им воспользуюсь.", 2, 9],
-      ["Дай свой номер. Не люблю ждать.", "А я не люблю, когда за меня решают. На этом и закончим.", -9, -12],
+      ["Оставлю тебе следующий ход", "Красиво. Я подумаю.", 7, 9],
+      ["Продолжим за кофе?", "Продолжим. Ты заслужил.", 9, 5],
+      ["Требую второй встречи", "Требовать будешь у автомата.", -10, -10, "pushy"],
     ],
   },
 ];
@@ -95,11 +76,15 @@ const answersContainer = document.querySelector(".answers");
 const sympathyPanel = document.querySelector(".sympathy");
 const sympathyValue = document.querySelector(".sympathy__label strong");
 const sympathyFill = document.querySelector(".sympathy__fill");
+const sympathyDelta = document.querySelector(".sympathy__delta");
 const character = document.querySelector(".character");
 const characterState = document.querySelector(".character__state");
 const resultPanel = document.querySelector(".result");
+const resultSympathy = document.querySelector(".result__sympathy strong");
 const resultTitle = document.querySelector(".result__title");
 const resultText = document.querySelector(".result__text");
+const resultCount = document.querySelector(".result__count");
+const rewardCards = [...document.querySelectorAll(".reward")];
 const restartButton = document.querySelector(".restart");
 const debugToggle = document.querySelector(".debug-toggle");
 const debugPanel = document.querySelector(".debug-panel");
@@ -108,14 +93,20 @@ let sympathy;
 let trust;
 let currentStep;
 let currentState;
+let badChoices;
 let previousChoiceWasCompliment;
+let lastSympathyChange;
+let lastTrustChange;
+let feedbackTimer;
+let transitionTimer;
 
 const clamp = (value) => Math.max(0, Math.min(100, value));
+const signed = (value) => `${value >= 0 ? "+" : ""}${value}`;
 
 function calculateState() {
-  if (sympathy >= 70 && trust >= 65) return 4;
-  if (sympathy >= 52 && trust >= 42) return 3;
-  if (sympathy >= 30 && trust >= 28) return 2;
+  if (sympathy >= 78 && trust >= 60) return 4;
+  if (sympathy >= 58 && trust >= 42) return 3;
+  if (sympathy >= 38 && trust >= 30) return 2;
   return 1;
 }
 
@@ -126,7 +117,14 @@ function updateStatus() {
   currentState = calculateState();
   character.className = `character character--state-${currentState}`;
   characterState.textContent = `State ${currentState} — ${stateNames[currentState - 1]}`;
-  debugPanel.textContent = `sympathy: ${sympathy}\ntrust: ${trust}\nstep: ${Math.min(currentStep + 1, dialogueSteps.length)}/${dialogueSteps.length}\nstate: ${currentState} — ${stateNames[currentState - 1]}`;
+  debugPanel.textContent = [
+    `sympathy: ${sympathy}`,
+    `trust: ${trust}`,
+    `choice: ${currentStep}/${MAX_CHOICES}`,
+    `state: ${currentState} — ${stateNames[currentState - 1]}`,
+    `last sympathy: ${signed(lastSympathyChange)}`,
+    `last trust: ${signed(lastTrustChange)}`,
+  ].join("\n");
 }
 
 function renderAnswers() {
@@ -140,56 +138,92 @@ function renderAnswers() {
   });
 }
 
+function showChoiceFeedback(change) {
+  clearTimeout(feedbackTimer);
+  sympathyDelta.textContent = signed(change);
+  sympathyDelta.className = `sympathy__delta ${change >= 0 ? "is-positive" : "is-negative"}`;
+  character.classList.remove("character--reaction-good", "character--reaction-bad");
+  void character.offsetWidth;
+  character.classList.add(change >= 0 ? "character--reaction-good" : "character--reaction-bad");
+  feedbackTimer = setTimeout(() => {
+    sympathyDelta.classList.remove("is-positive", "is-negative");
+    character.classList.remove("character--reaction-good", "character--reaction-bad");
+  }, 650);
+}
+
 function chooseAnswer(answer) {
   let reply = answer.reply;
   let sympathyChange = answer.sympathyChange;
   let trustChange = answer.trustChange;
 
   if (answer.tag === "compliment" && previousChoiceWasCompliment) {
-    sympathyChange -= 5;
+    sympathyChange -= 7;
     trustChange -= 6;
-    reply += " Серьёзно, давай немного сбавим обороты с комплиментами.";
+    reply = "Снова? Комплименты уже мешают.";
   }
 
   sympathy = clamp(sympathy + sympathyChange);
   trust = clamp(trust + trustChange);
+  lastSympathyChange = sympathyChange;
+  lastTrustChange = trustChange;
+  if (sympathyChange < 0) badChoices += 1;
   previousChoiceWasCompliment = answer.tag === "compliment";
   dialogueText.textContent = reply;
   currentStep += 1;
   updateStatus();
+  showChoiceFeedback(sympathyChange);
 
-  if (currentStep === dialogueSteps.length) {
+  if (badChoices >= EARLY_FAIL_MISTAKES || currentStep === MAX_CHOICES) {
     showEnding();
   } else {
-    renderAnswers();
+    answersContainer.replaceChildren();
+    transitionTimer = window.setTimeout(() => {
+      dialogueText.textContent = dialogueSteps[currentStep].line;
+      renderAnswers();
+    }, 550);
   }
+}
+
+function getRewardTier(score) {
+  if (score >= 90) return { name: "PERFECT", unlocked: 4, text: "Лучший финал. Alice явно заинтригована." };
+  if (score >= 70) return { name: "TIER 3", unlocked: 3, text: "Отличный разогрев. Будет продолжение." };
+  if (score >= 50) return { name: "TIER 2", unlocked: 2, text: "Хороший контакт. Основная награда открыта." };
+  if (score >= 30) return { name: "TIER 1", unlocked: 1, text: "Искра есть. Минимальная награда открыта." };
+  return { name: "FAIL", unlocked: 0, text: "Alice потеряла интерес. Награды закрыты." };
 }
 
 function showEnding() {
   answersContainer.replaceChildren();
-  let outcome;
-
-  if (sympathy >= 65 && trust >= 55) {
-    outcome = ["SUCCESS", "Alice явно заинтересована. Похоже, это только начало вашего общения."];
-  } else if (sympathy <= 25 || trust <= 20) {
-    outcome = ["FAIL", "Alice потеряла интерес и заканчивает разговор коротким прощанием."];
-  } else {
-    outcome = ["NEUTRAL", "Разговор закончился спокойно, но пока не привёл ни к чему большему."];
-  }
-
-  resultTitle.textContent = outcome[0];
-  resultText.textContent = outcome[1];
+  const outcome = getRewardTier(sympathy);
+  resultSympathy.textContent = `${sympathy}/100`;
+  resultTitle.textContent = outcome.name;
+  resultText.textContent = outcome.text;
+  resultCount.textContent = `${outcome.unlocked}/4 rewards unlocked`;
+  rewardCards.forEach((card, index) => {
+    const unlocked = index < outcome.unlocked;
+    card.classList.toggle("reward--locked", !unlocked);
+    card.querySelector("span").textContent = unlocked ? "UNLOCKED" : "LOCKED";
+  });
   resultPanel.hidden = false;
+  document.querySelector(".dialogue").classList.add("dialogue--result");
 }
 
 function restartGame() {
+  clearTimeout(feedbackTimer);
+  clearTimeout(transitionTimer);
   sympathy = INITIAL_SYMPATHY;
   trust = INITIAL_TRUST;
   currentStep = 0;
   currentState = 1;
+  badChoices = 0;
   previousChoiceWasCompliment = false;
+  lastSympathyChange = 0;
+  lastTrustChange = 0;
   dialogueText.textContent = dialogueSteps[0].line;
   resultPanel.hidden = true;
+  document.querySelector(".dialogue").classList.remove("dialogue--result");
+  character.classList.remove("character--reaction-good", "character--reaction-bad");
+  sympathyDelta.className = "sympathy__delta";
   updateStatus();
   renderAnswers();
 }
