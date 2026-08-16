@@ -27,7 +27,7 @@
       <section class="scene" aria-label="Игровая сцена">
         <div class="character character--state-1" aria-label="Состояние персонажа">
           <span>Character</span>
-          <span class="character__state">State 1</span>
+          <span class="character__state">State 1 — Distant</span>
         </div>
       </section>
 
@@ -36,7 +36,16 @@
         <p class="dialogue__text">Привет. Я тебя раньше здесь не видела.</p>
 
         <div class="answers" aria-label="Варианты ответа"></div>
+
+        <div class="result" hidden>
+          <strong class="result__title"></strong>
+          <p class="result__text"></p>
+          <button class="restart" type="button">Restart</button>
+        </div>
       </section>
+
+      <button class="debug-toggle" type="button" aria-expanded="false">DEBUG</button>
+      <output class="debug-panel" hidden></output>
     </main>
 
     <script src="script.js"></script>

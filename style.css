@@ -132,9 +132,15 @@ button {
 }
 
 .character--state-3 {
-  border-color: #ba86a7;
-  background: #543848;
-  color: #f0c6db;
+  border-color: #ad7799;
+  background: #4e3546;
+  color: #e9bad2;
+}
+
+.character--state-4 {
+  border-color: #d39aae;
+  background: #65404d;
+  color: #ffe0e9;
 }
 
 .dialogue {
@@ -206,6 +212,71 @@ button {
   transform: translateY(0);
 }
 
+.result {
+  text-align: center;
+}
+
+.result__title {
+  display: block;
+  color: #fff;
+  font-size: clamp(1.25rem, 2.2vw, 1.7rem);
+  letter-spacing: 0.12em;
+}
+
+.result__text {
+  margin: 8px 0 16px;
+  color: #c8c7d6;
+}
+
+.restart,
+.debug-toggle {
+  border: 1px solid #646277;
+  border-radius: 5px;
+  background: #302f3f;
+  color: #efedf5;
+  cursor: pointer;
+}
+
+.restart {
+  min-width: 140px;
+  padding: 10px 22px;
+}
+
+.debug-toggle {
+  position: absolute;
+  z-index: 5;
+  right: 10px;
+  bottom: 8px;
+  padding: 5px 8px;
+  color: #aaa8b7;
+  font-size: 0.62rem;
+  letter-spacing: 0.08em;
+}
+
+.debug-panel {
+  position: absolute;
+  z-index: 4;
+  right: 10px;
+  bottom: 40px;
+  width: 170px;
+  padding: 10px 12px;
+  border: 1px solid #555368;
+  border-radius: 5px;
+  background: rgb(12 12 19 / 94%);
+  color: #c8c7d6;
+  font: 0.72rem/1.55 ui-monospace, SFMono-Regular, Menlo, monospace;
+  white-space: pre-line;
+}
+
+.restart:hover,
+.restart:focus-visible,
+.debug-toggle:hover,
+.debug-toggle:focus-visible {
+  border-color: #aaa6c3;
+  background: #414052;
+  outline: none;
+}
+
 @media (max-width: 680px) {
   body {
     overflow: auto;
@@ -228,6 +299,10 @@ button {
   .dialogue {
     min-height: 292px;
     padding-top: 30px;
+  }
+
+  .debug-toggle {
+    bottom: 5px;
   }
 
   .dialogue__text {
