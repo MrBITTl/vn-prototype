@@ -58,6 +58,24 @@ button {
   width: clamp(145px, 18vw, 210px);
 }
 
+.sympathy__delta {
+  position: absolute;
+  top: 14px;
+  right: -2px;
+  opacity: 0;
+  font-weight: 800;
+  transition: transform 200ms ease, opacity 200ms ease;
+}
+
+.sympathy__delta.is-positive,
+.sympathy__delta.is-negative {
+  opacity: 1;
+  transform: translateY(12px);
+}
+
+.sympathy__delta.is-positive { color: #8ee6b4; }
+.sympathy__delta.is-negative { color: #ff8f9d; }
+
 .sympathy__label {
   display: block;
   margin-bottom: 7px;
@@ -143,6 +161,18 @@ button {
   color: #ffe0e9;
 }
 
+.character--reaction-good { animation: reaction-good 600ms ease; }
+.character--reaction-bad { animation: reaction-bad 600ms ease; }
+
+@keyframes reaction-good {
+  35% { border-color: #8ee6b4; background: #365448; transform: scale(1.012); }
+}
+
+@keyframes reaction-bad {
+  35% { border-color: #ff788b; background: #56303a; transform: translateX(-4px); }
+  55% { transform: translateX(4px); }
+}
+
 .dialogue {
   position: absolute;
   z-index: 2;
@@ -216,6 +246,28 @@ button {
   text-align: center;
 }
 
+.dialogue--result {
+  padding-top: 24px;
+}
+
+.dialogue--result .dialogue__name,
+.dialogue--result .dialogue__text {
+  display: none;
+}
+
+.result__sympathy {
+  color: #c8c7d6;
+  font-size: 0.78rem;
+  letter-spacing: 0.12em;
+}
+
+.result__sympathy strong {
+  display: block;
+  margin: 3px 0;
+  color: #fff;
+  font-size: clamp(1.45rem, 3vw, 2.1rem);
+}
+
 .result__title {
   display: block;
   color: #fff;
@@ -224,9 +276,51 @@ button {
 }
 
 .result__text {
-  margin: 8px 0 16px;
+  margin: 4px 0 8px;
   color: #c8c7d6;
 }
+
+.result__count {
+  display: block;
+  margin-bottom: 10px;
+  color: #e6bfd2;
+  font-size: 0.85rem;
+}
+
+.rewards {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 8px;
+  max-width: 700px;
+  margin: 0 auto 12px;
+}
+
+.reward {
+  padding: 9px 5px;
+  border: 1px solid #ad7799;
+  border-radius: 5px;
+  background: #4e3546;
+  color: #fff;
+  font-size: 0.75rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+}
+
+.reward span {
+  display: block;
+  margin-top: 3px;
+  color: #f4c9de;
+  font-size: 0.58rem;
+}
+
+.reward--locked {
+  border-color: #42414f;
+  background: #24242e;
+  color: #6f6d7b;
+  filter: grayscale(1);
+}
+
+.reward--locked span { color: #777582; }
 
 .restart,
 .debug-toggle {
@@ -301,6 +395,10 @@ button {
     padding-top: 30px;
   }
 
+  .dialogue--result {
+    min-height: 340px;
+  }
+
   .debug-toggle {
     bottom: 5px;
   }
@@ -316,6 +414,10 @@ button {
 
   .answers button {
     min-height: 44px;
+  }
+
+  .rewards {
+    grid-template-columns: repeat(2, 1fr);
   }
 }
 

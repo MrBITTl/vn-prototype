@@ -16,9 +16,10 @@
         aria-label="Уровень симпатии Alice"
         aria-valuemin="0"
         aria-valuemax="100"
-        aria-valuenow="20"
+        aria-valuenow="35"
       >
-        <span class="sympathy__label">Sympathy: <strong>20/100</strong></span>
+        <span class="sympathy__label">Sympathy: <strong>35/100</strong></span>
+        <span class="sympathy__delta" aria-live="polite"></span>
         <span class="sympathy__track" aria-hidden="true">
           <span class="sympathy__fill"></span>
         </span>
@@ -38,8 +39,16 @@
         <div class="answers" aria-label="Варианты ответа"></div>
 
         <div class="result" hidden>
+          <div class="result__sympathy">FINAL SYMPATHY <strong></strong></div>
           <strong class="result__title"></strong>
           <p class="result__text"></p>
+          <strong class="result__count"></strong>
+          <div class="rewards" aria-label="Открытые награды">
+            <div class="reward">REWARD 1 <span>LOCKED</span></div>
+            <div class="reward">REWARD 2 <span>LOCKED</span></div>
+            <div class="reward">REWARD 3 <span>LOCKED</span></div>
+            <div class="reward">REWARD 4 <span>LOCKED</span></div>
+          </div>
           <button class="restart" type="button">Restart</button>
         </div>
       </section>
