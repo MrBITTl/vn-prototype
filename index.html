@@ -34,6 +34,22 @@
         <div class="after-placeholder"><span>After scene</span><strong>Placeholder</strong></div>
       </section>
 
+      <section class="climax-scene" hidden aria-label="Кульминация сцены">
+        <div class="climax-placeholder">
+          <span>Climax</span>
+          <strong>Animation placeholder</strong>
+          <small>Alice замирает, а затем тихо выдыхает.</small>
+        </div>
+      </section>
+
+      <section class="ending" hidden aria-label="Финальный экран">
+        <div class="ending__content">
+          <strong>WALUMIO</strong>
+          <span>END</span>
+          <button class="restart" type="button">Restart</button>
+        </div>
+      </section>
+
       <section class="dialogue" aria-live="polite">
         <div class="dialogue__name">Alice</div>
         <p class="dialogue__text"></p>
@@ -44,12 +60,10 @@
           <fieldset class="control-group rhythm-controls">
             <legend>Rhythm <strong class="rhythm-value">1 — Slow</strong></legend>
           </fieldset>
-          <div class="interactive-actions">
-            <button class="finish" type="button">Finish</button>
-          </div>
         </div>
 
-        <button class="restart" type="button" hidden>Restart</button>
+        <button class="continue" type="button" hidden>Continue</button>
+        <button class="restart restart--early" type="button" hidden>Restart</button>
       </section>
 
       <button class="debug-toggle" type="button" aria-expanded="false">DEBUG</button>
