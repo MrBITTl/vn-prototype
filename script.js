@@ -69,6 +69,8 @@ const characterState = $(".character__state");
 const interactionScene = $(".interactive-scene");
 const interactionPhaseScene = $(".scene--interaction");
 const afterScene = $(".after-scene");
+const climaxScene = $(".climax-scene");
+const ending = $(".ending");
 const controls = $(".controls");
 const reactionValue = $(".reaction-value");
 const reactionFill = $(".reaction-meter__fill");
@@ -76,8 +78,9 @@ const reactionMeter = $(".reaction-meter");
 const rhythmValue = $(".rhythm-value");
 const rhythmDisplay = $(".rhythm-display");
 const interactionPlaceholder = $(".interactive-placeholder");
-const finishButton = $(".finish");
-const restartButton = $(".restart");
+const continueButton = $(".continue");
+const restartButtons = document.querySelectorAll(".restart");
+const earlyRestartButton = $(".restart--early");
 const phaseLabel = $(".phase-label");
 const debugToggle = $(".debug-toggle");
 const debugPanel = $(".debug-panel");
@@ -97,6 +100,15 @@ let transitionTimer;
 let rhythmTicks;
 let rhythmStartedAt;
 let switchBoost;
+let epilogueStep;
+let climaxTriggered;
+
+const epilogueLines = [
+  ["Alice", "Вот теперь можно просто немного помолчать."],
+  ["Player", "Я никуда не спешу."],
+  ["Alice", "Хорошо. Тогда останься рядом."],
+  ["Player", "Останусь."],
+];
 
 const clamp = (value) => Math.max(0, Math.min(100, value));
 
@@ -117,6 +129,7 @@ function calculateTier() {
 
 function updateDebug() {
   debugPanel.textContent = [
+    `state: ${phase}`,
     `phase: ${phase}`,
     `sympathy: ${sympathy}`,
     `trust: ${trust}`,
@@ -175,14 +188,14 @@ function chooseAnswer(reply, sympathyDelta, trustDelta, tag) {
 }
 
 function showEarlyEnding() {
-  phase = "AFTER SCENE (early)";
+  phase = "AFTER_SCENE (early)";
   interactionPhaseScene.hidden = true;
   afterScene.hidden = false;
   dialogue.classList.add("dialogue--after");
   phaseLabel.textContent = "After scene";
   dialogueText.textContent = "Думаю, на сегодня хватит.";
   hint.textContent = "Alice уходит, оставляя тишину.";
-  restartButton.hidden = false;
+  earlyRestartButton.hidden = false;
   updateDebug();
 }
 
@@ -204,6 +217,7 @@ function buildControls() {
 }
 
 function setRhythm(id) {
+  if (phase !== "INTERACTIVE") return;
   const next = rhythmOptions[id - 1];
   const button = $(`.rhythm-controls button[data-rhythm="${id}"]`);
   if (!next || next === rhythm || button?.disabled) return;
@@ -242,6 +256,7 @@ function reactionRate() {
 }
 
 function tickInteraction() {
+  if (phase !== "INTERACTIVE") return;
   const oldReaction = reaction;
   reaction = clamp(reaction + reactionRate());
   rhythmTicks += 1;
@@ -253,6 +268,7 @@ function tickInteraction() {
   if (rhythmTicks === 7) dialogueText.textContent = delta > 0.4 ? "Ещё немного…" : "Смени ритм.";
   lastReactionChange = `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
   updateDebug();
+  if (reaction >= 100) startClimax();
 }
 
 function startInteractivePhase() {
@@ -270,25 +286,62 @@ function startInteractivePhase() {
   interactionTimer = setInterval(tickInteraction, 900);
 }
 
-function finishInteraction() {
+function startClimax() {
+  if (phase !== "INTERACTIVE" || climaxTriggered) return;
+  climaxTriggered = true;
   clearInterval(interactionTimer);
-  phase = "AFTER SCENE";
-  interactionScene.hidden = true;
-  afterScene.hidden = false;
+  reaction = 100;
+  reactionValue.textContent = "100";
+  reactionFill.style.width = "100%";
+  reactionMeter.setAttribute("aria-valuenow", "100");
+  phase = "CLIMAX";
   controls.hidden = true;
-  restartButton.hidden = false;
+  interactionScene.hidden = true;
+  climaxScene.hidden = false;
+  phaseLabel.textContent = "Climax";
+  dialogueText.textContent = "Alice замирает, а затем тихо выдыхает.";
+  hint.textContent = "CLIMAX ANIMATION PLACEHOLDER";
+  updateDebug();
+  transitionTimer = setTimeout(startAfterScene, 1600);
+}
+
+function startAfterScene() {
+  if (phase !== "CLIMAX") return;
+  clearTimeout(transitionTimer);
+  phase = "AFTER_SCENE";
+  climaxScene.hidden = true;
+  afterScene.hidden = false;
   dialogue.classList.add("dialogue--after");
   phaseLabel.textContent = "After scene";
-  if (reaction >= 72) {
-    dialogueText.textContent = "Останься ещё немного.";
-    hint.textContent = "Alice прижимается ближе.";
-  } else if (reaction >= 42) {
-    dialogueText.textContent = "Мне понравилось. Правда.";
-    hint.textContent = "Она тепло улыбается.";
-  } else {
-    dialogueText.textContent = "В следующий раз — не спеши.";
-    hint.textContent = "Alice мягко отстраняется.";
-  }
+  epilogueStep = 0;
+  renderEpilogueLine();
+  continueButton.hidden = false;
+  updateDebug();
+}
+
+function renderEpilogueLine() {
+  const [speaker, line] = epilogueLines[epilogueStep];
+  $(".dialogue__name").textContent = speaker;
+  dialogueText.textContent = line;
+  hint.textContent = epilogueStep === epilogueLines.length - 1 ? "Нажми, чтобы завершить" : "Нажми, чтобы продолжить";
+}
+
+function advanceEpilogue() {
+  if (phase === "CLIMAX") return startAfterScene();
+  if (phase !== "AFTER_SCENE") return;
+  epilogueStep += 1;
+  if (epilogueStep < epilogueLines.length) {
+    renderEpilogueLine();
+    updateDebug();
+  } else showEnding();
+}
+
+function showEnding() {
+  phase = "ENDING";
+  afterScene.hidden = true;
+  dialogue.hidden = true;
+  ending.hidden = false;
+  phaseLabel.textContent = "Ending";
   updateDebug();
 }
 
@@ -307,15 +360,22 @@ function restartGame() {
   rhythmTicks = 0;
   rhythmStartedAt = Date.now();
   switchBoost = 0;
+  epilogueStep = 0;
+  climaxTriggered = false;
   lastReactionChange = "+0.0";
   interactionPhaseScene.hidden = false;
   interactionScene.hidden = true;
   afterScene.hidden = true;
+  climaxScene.hidden = true;
+  ending.hidden = true;
+  dialogue.hidden = false;
   controls.hidden = true;
   answers.hidden = false;
-  restartButton.hidden = true;
+  earlyRestartButton.hidden = true;
+  continueButton.hidden = true;
   dialogue.classList.remove("dialogue--after");
   phaseLabel.textContent = "Interaction";
+  $(".dialogue__name").textContent = "Alice";
   dialogueText.textContent = dialogueSteps[0].line;
   hint.textContent = "Выбери ответ или действие";
   updateCharacter();
@@ -323,8 +383,13 @@ function restartGame() {
   updateDebug();
 }
 
-finishButton.addEventListener("click", finishInteraction);
-restartButton.addEventListener("click", restartGame);
+restartButtons.forEach((button) => button.addEventListener("click", restartGame));
+continueButton.addEventListener("click", (event) => {
+  event.stopPropagation();
+  advanceEpilogue();
+});
+dialogue.addEventListener("click", advanceEpilogue);
+climaxScene.addEventListener("click", advanceEpilogue);
 document.addEventListener("keydown", (event) => {
   if (phase !== "INTERACTIVE" || event.repeat || !["1", "2", "3"].includes(event.key)) return;
   setRhythm(Number(event.key));
