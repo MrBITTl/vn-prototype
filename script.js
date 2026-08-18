@@ -275,6 +275,7 @@ function tickInteraction() {
     return;
   }
   updateDebug();
+  if (reaction >= 100) startClimax();
 }
 
 function startInteractivePhase() {
