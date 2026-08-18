@@ -1,237 +1,345 @@
 const INITIAL_SYMPATHY = 35;
 const INITIAL_TRUST = 30;
-const MAX_CHOICES = 8;
-const EARLY_FAIL_MISTAKES = 4;
+const MAX_CHOICES = 6;
 
 const dialogueSteps = [
   {
-    line: "Новенький? Или хорошо маскируешься?",
+    line: "Ты всегда такой уверенный?",
     answers: [
-      ["Я местная легенда", "Скромно. Уже смешно.", 8, 2],
-      ["Просто осматриваюсь", "Спокойный старт. Уважаю.", 5, 6],
-      ["А ты следишь за мной?", "Не льсти себе, детектив.", 3, 1],
+      ["Только по выходным.", "Она сдерживает улыбку.", 8, 4],
+      ["А тебе не нравится?", "Alice смотрит внимательнее.", 6, 2],
+      ["[Улыбнуться]", "Она отвечает улыбкой.", 5, 7],
     ],
   },
   {
-    line: "И что ты здесь ищешь?",
+    line: "Alice немного приближается.",
     answers: [
-      ["Приключения без инструкции", "Вот это правильная ошибка.", 8, 4],
-      ["Хорошую компанию", "Уверенно. Возможно, повезло.", 6, 5],
-      ["Тебя, очевидно", "Слишком быстро. Притормози.", -7, -6, "pushy"],
+      ["[Подойти ближе]", "Она остаётся рядом.", 8, 5],
+      ["[Остаться на месте]", "Ей нравится, что ты не спешишь.", 4, 9],
+      ["Передумала убегать?", "Не переоценивай себя.", -7, -5, "bad"],
     ],
   },
   {
-    line: "Допустим, я не прогнала тебя.",
+    line: "И что теперь?",
     answers: [
-      ["Запишу как победу", "Мелкую. Но заслуженную.", 8, 3],
-      ["Можем просто поболтать", "Без давления? Редкость.", 5, 8],
-      ["Ты сегодня прекрасна", "Мило. Один раз считается.", 6, 1, "compliment"],
+      ["Импровизируем.", "Звучит опасно. Продолжай.", 8, 4],
+      ["[Протянуть руку]", "Alice осторожно касается ладони.", 6, 9],
+      ["Решай сама.", "Она отступает на полшага.", -8, -7, "bad"],
     ],
   },
   {
-    line: "У тебя всегда такой план?",
+    line: "Ты умеешь не торопиться?",
     answers: [
-      ["Плана не пережил автобус", "Соболезную плану. Мне нравится.", 9, 7],
-      ["Импровизация надёжнее", "Опасная уверенность. Продолжай.", 7, 3],
-      ["Дай номер — расскажу", "Нет. И напор убавь.", -10, -9, "pushy"],
+      ["Когда есть ради кого.", "Теперь она не скрывает улыбку.", 9, 5],
+      ["[Замедлиться]", "Напряжение между вами тает.", 5, 10],
+      ["Не люблю ждать.", "Alice становится холоднее.", -10, -9, "bad"],
     ],
   },
   {
-    line: "Ладно. Чем меня удивишь?",
+    line: "Alice не отводит взгляд.",
     answers: [
-      ["Умею вовремя молчать", "Сильный и редкий навык.", 5, 9],
-      ["Шучу хуже, чем танцую", "Теперь я обязана это увидеть.", 9, 6],
-      ["Ещё одним комплиментом", "Запасной план так себе.", 4, -2, "compliment"],
+      ["[Коснуться её руки]", "Она переплетает ваши пальцы.", 9, 8],
+      ["Красивый момент.", "Не порть его словами.", 6, 5],
+      ["[Отвести взгляд]", "Она даёт тебе пространство.", -2, 5],
     ],
   },
   {
-    line: "Кофе или прогулка?",
+    line: "Останешься ещё немного?",
     answers: [
-      ["Кофе. Я угощаю", "Договорились. Без фанфар.", 7, 5],
-      ["Прогулка без маршрута", "Хаос, но симпатичный.", 8, 3],
-      ["Решай за нас", "Нет уж. Имей мнение.", -7, -5, "rude"],
-    ],
-  },
-  {
-    line: "Ты не так плох, как казалось.",
-    answers: [
-      ["Это мой максимум", "Самоирония тебя спасает.", 9, 6],
-      ["Ты тоже ничего", "Нагло. Но честно.", 7, 3],
-      ["Я вообще-то идеален", "А вот и рекламная пауза.", -7, -4, "rude"],
-    ],
-  },
-  {
-    line: "Последний шанс не всё испортить.",
-    answers: [
-      ["Оставлю тебе следующий ход", "Красиво. Я подумаю.", 7, 9],
-      ["Продолжим за кофе?", "Продолжим. Ты заслужил.", 9, 5],
-      ["Требую второй встречи", "Требовать будешь у автомата.", -10, -10, "pushy"],
+      ["С удовольствием.", "Тогда иди за мной.", 9, 8],
+      ["[Кивнуть]", "Alice берёт тебя за руку.", 6, 9],
+      ["Если удивишь.", "Она отпускает твою руку.", -12, -10, "bad"],
     ],
   },
 ];
 
-const stateNames = ["Distant", "Interested", "Flirting", "Close"];
-const dialogueText = document.querySelector(".dialogue__text");
-const answersContainer = document.querySelector(".answers");
-const sympathyPanel = document.querySelector(".sympathy");
-const sympathyValue = document.querySelector(".sympathy__label strong");
-const sympathyFill = document.querySelector(".sympathy__fill");
-const sympathyDelta = document.querySelector(".sympathy__delta");
-const character = document.querySelector(".character");
-const characterState = document.querySelector(".character__state");
-const resultPanel = document.querySelector(".result");
-const resultSympathy = document.querySelector(".result__sympathy strong");
-const resultTitle = document.querySelector(".result__title");
-const resultText = document.querySelector(".result__text");
-const resultCount = document.querySelector(".result__count");
-const rewardCards = [...document.querySelectorAll(".reward")];
-const restartButton = document.querySelector(".restart");
-const debugToggle = document.querySelector(".debug-toggle");
-const debugPanel = document.querySelector(".debug-panel");
+const stateNames = ["Distant", "Interested", "Flirting", "Intimate"];
+const speedOptions = ["Slow", "Medium", "Fast"];
+const intensityOptions = ["Soft", "Normal", "Intense"];
+const $ = (selector) => document.querySelector(selector);
+const dialogue = $(".dialogue");
+const dialogueText = $(".dialogue__text");
+const hint = $(".scene-hint");
+const answers = $(".answers");
+const character = $(".character");
+const characterState = $(".character__state");
+const interactionScene = $(".interactive-scene");
+const interactionPhaseScene = $(".scene--interaction");
+const afterScene = $(".after-scene");
+const controls = $(".controls");
+const reactionValue = $(".reaction-value");
+const reactionFill = $(".reaction-meter__fill");
+const reactionMeter = $(".reaction-meter");
+const speedValue = $(".speed-value");
+const intensityValue = $(".intensity-value");
+const syncAction = $(".sync-action");
+const finishButton = $(".finish");
+const restartButton = $(".restart");
+const phaseLabel = $(".phase-label");
+const debugToggle = $(".debug-toggle");
+const debugPanel = $(".debug-panel");
 
+let phase;
 let sympathy;
 let trust;
+let intimacyTier;
 let currentStep;
-let currentState;
 let badChoices;
-let previousChoiceWasCompliment;
-let lastSympathyChange;
-let lastTrustChange;
-let feedbackTimer;
+let reaction;
+let speed;
+let intensity;
+let interactionStep;
+let lastChange;
+let interactionTimer;
 let transitionTimer;
+let comboAge;
+let syncBoost;
 
 const clamp = (value) => Math.max(0, Math.min(100, value));
-const signed = (value) => `${value >= 0 ? "+" : ""}${value}`;
 
 function calculateState() {
-  if (sympathy >= 78 && trust >= 60) return 4;
-  if (sympathy >= 58 && trust >= 42) return 3;
-  if (sympathy >= 38 && trust >= 30) return 2;
+  const score = sympathy + trust;
+  if (score >= 135) return 4;
+  if (score >= 105) return 3;
+  if (score >= 75) return 2;
   return 1;
 }
 
-function updateStatus() {
-  sympathyValue.textContent = `${sympathy}/100`;
-  sympathyFill.style.width = `${sympathy}%`;
-  sympathyPanel.setAttribute("aria-valuenow", sympathy);
-  currentState = calculateState();
-  character.className = `character character--state-${currentState}`;
-  characterState.textContent = `State ${currentState} — ${stateNames[currentState - 1]}`;
+function calculateTier() {
+  const score = sympathy + trust;
+  if (score >= 135) return "HIGH";
+  if (score >= 100) return "MEDIUM";
+  return "LOW";
+}
+
+function updateDebug() {
   debugPanel.textContent = [
+    `phase: ${phase}`,
     `sympathy: ${sympathy}`,
     `trust: ${trust}`,
-    `choice: ${currentStep}/${MAX_CHOICES}`,
-    `state: ${currentState} — ${stateNames[currentState - 1]}`,
-    `last sympathy: ${signed(lastSympathyChange)}`,
-    `last trust: ${signed(lastTrustChange)}`,
+    `intimacyTier: ${intimacyTier}`,
+    `interaction step: ${interactionStep}`,
+    `Reaction: ${Math.round(reaction)}`,
+    `Speed: ${speed}`,
+    `Intensity: ${intensity}`,
+    `last change: ${lastChange}`,
   ].join("\n");
 }
 
+function updateCharacter(change = 0) {
+  const state = calculateState();
+  character.className = `character character--state-${state}`;
+  characterState.textContent = `State ${state} — ${stateNames[state - 1]}`;
+  if (change) {
+    character.classList.add(change > 0 ? "character--reaction-good" : "character--reaction-bad");
+  }
+}
+
 function renderAnswers() {
-  answersContainer.replaceChildren();
-  dialogueSteps[currentStep].answers.forEach(([text, reply, sympathyChange, trustChange, tag]) => {
+  answers.replaceChildren();
+  dialogueSteps[currentStep].answers.forEach(([label, reply, sympathyDelta, trustDelta, tag]) => {
     const button = document.createElement("button");
     button.type = "button";
-    button.textContent = text;
-    button.addEventListener("click", () => chooseAnswer({ reply, sympathyChange, trustChange, tag }));
-    answersContainer.append(button);
+    button.textContent = label;
+    button.addEventListener("click", () => chooseAnswer(reply, sympathyDelta, trustDelta, tag));
+    answers.append(button);
   });
 }
 
-function showChoiceFeedback(change) {
-  clearTimeout(feedbackTimer);
-  sympathyDelta.textContent = signed(change);
-  sympathyDelta.className = `sympathy__delta ${change >= 0 ? "is-positive" : "is-negative"}`;
-  character.classList.remove("character--reaction-good", "character--reaction-bad");
-  void character.offsetWidth;
-  character.classList.add(change >= 0 ? "character--reaction-good" : "character--reaction-bad");
-  feedbackTimer = setTimeout(() => {
-    sympathyDelta.classList.remove("is-positive", "is-negative");
-    character.classList.remove("character--reaction-good", "character--reaction-bad");
-  }, 650);
-}
-
-function chooseAnswer(answer) {
-  let reply = answer.reply;
-  let sympathyChange = answer.sympathyChange;
-  let trustChange = answer.trustChange;
-
-  if (answer.tag === "compliment" && previousChoiceWasCompliment) {
-    sympathyChange -= 7;
-    trustChange -= 6;
-    reply = "Снова? Комплименты уже мешают.";
-  }
-
-  sympathy = clamp(sympathy + sympathyChange);
-  trust = clamp(trust + trustChange);
-  lastSympathyChange = sympathyChange;
-  lastTrustChange = trustChange;
-  if (sympathyChange < 0) badChoices += 1;
-  previousChoiceWasCompliment = answer.tag === "compliment";
-  dialogueText.textContent = reply;
+function chooseAnswer(reply, sympathyDelta, trustDelta, tag) {
+  answers.replaceChildren();
+  sympathy = clamp(sympathy + sympathyDelta);
+  trust = clamp(trust + trustDelta);
+  badChoices += tag === "bad" ? 1 : 0;
   currentStep += 1;
-  updateStatus();
-  showChoiceFeedback(sympathyChange);
+  lastChange = `sympathy ${sympathyDelta >= 0 ? "+" : ""}${sympathyDelta}, trust ${trustDelta >= 0 ? "+" : ""}${trustDelta}`;
+  dialogueText.textContent = reply;
+  hint.textContent = "Alice реагирует на твой выбор";
+  updateCharacter(sympathyDelta + trustDelta);
+  updateDebug();
 
-  if (badChoices >= EARLY_FAIL_MISTAKES || currentStep === MAX_CHOICES) {
-    showEnding();
+  if (badChoices >= 3 || sympathy + trust < 42) {
+    transitionTimer = setTimeout(showEarlyEnding, 650);
+  } else if (currentStep === MAX_CHOICES) {
+    transitionTimer = setTimeout(startInteractivePhase, 700);
   } else {
-    answersContainer.replaceChildren();
-    transitionTimer = window.setTimeout(() => {
+    transitionTimer = setTimeout(() => {
+      updateCharacter();
       dialogueText.textContent = dialogueSteps[currentStep].line;
+      hint.textContent = "Выбери ответ или действие";
       renderAnswers();
-    }, 550);
+    }, 650);
   }
 }
 
-function getRewardTier(score) {
-  if (score >= 90) return { name: "PERFECT", unlocked: 4, text: "Лучший финал. Alice явно заинтригована." };
-  if (score >= 70) return { name: "TIER 3", unlocked: 3, text: "Отличный разогрев. Будет продолжение." };
-  if (score >= 50) return { name: "TIER 2", unlocked: 2, text: "Хороший контакт. Основная награда открыта." };
-  if (score >= 30) return { name: "TIER 1", unlocked: 1, text: "Искра есть. Минимальная награда открыта." };
-  return { name: "FAIL", unlocked: 0, text: "Alice потеряла интерес. Награды закрыты." };
+function showEarlyEnding() {
+  phase = "AFTER SCENE (early)";
+  interactionPhaseScene.hidden = true;
+  afterScene.hidden = false;
+  dialogue.classList.add("dialogue--after");
+  phaseLabel.textContent = "After scene";
+  dialogueText.textContent = "Думаю, на сегодня хватит.";
+  hint.textContent = "Alice уходит, оставляя тишину.";
+  restartButton.hidden = false;
+  updateDebug();
 }
 
-function showEnding() {
-  answersContainer.replaceChildren();
-  const outcome = getRewardTier(sympathy);
-  resultSympathy.textContent = `${sympathy}/100`;
-  resultTitle.textContent = outcome.name;
-  resultText.textContent = outcome.text;
-  resultCount.textContent = `${outcome.unlocked}/4 rewards unlocked`;
-  rewardCards.forEach((card, index) => {
-    const unlocked = index < outcome.unlocked;
-    card.classList.toggle("reward--locked", !unlocked);
-    card.querySelector("span").textContent = unlocked ? "UNLOCKED" : "LOCKED";
+function buildControls() {
+  const makeButtons = (container, values, type) => {
+    container.querySelectorAll("button").forEach((button) => button.remove());
+    values.forEach((value, index) => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.textContent = value;
+      button.dataset.value = value;
+      const unlocked = intimacyTier === "HIGH" || (intimacyTier === "MEDIUM" && (type === "speed" || index < 2)) || (intimacyTier === "LOW" && index < 2);
+      button.disabled = !unlocked;
+      button.addEventListener("click", () => setControl(type, value));
+      container.append(button);
+    });
+  };
+  makeButtons($(".speed-controls"), speedOptions, "speed");
+  makeButtons($(".intensity-controls"), intensityOptions, "intensity");
+  syncAction.hidden = intimacyTier !== "HIGH";
+  updateControlButtons();
+}
+
+function setControl(type, value) {
+  const oldValue = type === "speed" ? speed : intensity;
+  if (oldValue === value) return;
+  if (type === "speed") speed = value;
+  else intensity = value;
+  comboAge = 0;
+  interactionStep += 1;
+  lastChange = `${type}: ${oldValue} → ${value}`;
+  const tooSoon = interactionStep < 3 && (speed === "Fast" || intensity === "Intense");
+  dialogueText.textContent = tooSoon ? "Не спеши…" : interactionStep > 5 ? "Да, меняй ритм." : "Так лучше. Продолжай.";
+  updateControlButtons();
+  updateDebug();
+}
+
+function updateControlButtons() {
+  speedValue.textContent = speed;
+  intensityValue.textContent = intensity;
+  document.querySelectorAll(".control-group button").forEach((button) => {
+    const selected = button.dataset.value === speed || button.dataset.value === intensity;
+    button.classList.toggle("is-active", selected);
+    button.setAttribute("aria-pressed", String(selected));
   });
-  resultPanel.hidden = false;
-  document.querySelector(".dialogue").classList.add("dialogue--result");
+}
+
+function reactionRate() {
+  const s = speedOptions.indexOf(speed);
+  const i = intensityOptions.indexOf(intensity);
+  const progress = interactionStep + comboAge / 4;
+  let rate;
+  if (progress < 3) rate = s === 0 && i === 0 ? 1.8 : s + i >= 3 ? -2.4 : 0.5;
+  else if (progress < 7) rate = s === 1 && i === 1 ? 2.2 : Math.abs(s - i) > 1 ? -1.2 : 0.65;
+  else rate = s === 2 && i >= 1 ? 1.65 : s === 1 && i === 2 ? 1.3 : 0.25;
+  if (comboAge > 7) rate -= (comboAge - 7) * 0.32;
+  return rate + syncBoost;
+}
+
+function tickInteraction() {
+  const oldReaction = reaction;
+  reaction = clamp(reaction + reactionRate());
+  comboAge += 1;
+  syncBoost = Math.max(0, syncBoost - 0.12);
+  reactionValue.textContent = Math.round(reaction);
+  reactionFill.style.width = `${reaction}%`;
+  reactionMeter.setAttribute("aria-valuenow", String(Math.round(reaction)));
+  const delta = reaction - oldReaction;
+  if (comboAge === 6) dialogueText.textContent = delta > 0 ? "Не останавливайся…" : "Попробуй иначе.";
+  lastChange = `Reaction ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
+  updateDebug();
+}
+
+function startInteractivePhase() {
+  phase = "INTERACTIVE";
+  intimacyTier = calculateTier();
+  interactionPhaseScene.hidden = true;
+  interactionScene.hidden = false;
+  answers.hidden = true;
+  controls.hidden = false;
+  phaseLabel.textContent = "Interactive";
+  dialogueText.textContent = "Начни медленно. Я подскажу.";
+  hint.textContent = "Меняй ритм — одна комбинация наскучит";
+  buildControls();
+  tickInteraction();
+  interactionTimer = setInterval(tickInteraction, 900);
+}
+
+syncAction.addEventListener("click", () => {
+  if (syncAction.disabled) return;
+  syncBoost = 1.5;
+  comboAge = 0;
+  interactionStep += 1;
+  lastChange = "Match her rhythm: boost";
+  dialogueText.textContent = "Вот так. Чувствуешь?";
+  syncAction.disabled = true;
+  setTimeout(() => { syncAction.disabled = false; }, 4500);
+  updateDebug();
+});
+
+function finishInteraction() {
+  clearInterval(interactionTimer);
+  phase = "AFTER SCENE";
+  interactionScene.hidden = true;
+  afterScene.hidden = false;
+  controls.hidden = true;
+  restartButton.hidden = false;
+  dialogue.classList.add("dialogue--after");
+  phaseLabel.textContent = "After scene";
+  if (reaction >= 72) {
+    dialogueText.textContent = "Останься ещё немного.";
+    hint.textContent = "Alice прижимается ближе.";
+  } else if (reaction >= 42) {
+    dialogueText.textContent = "Мне понравилось. Правда.";
+    hint.textContent = "Она тепло улыбается.";
+  } else {
+    dialogueText.textContent = "В следующий раз — не спеши.";
+    hint.textContent = "Alice мягко отстраняется.";
+  }
+  lastChange = `Finish at Reaction ${Math.round(reaction)}`;
+  updateDebug();
 }
 
 function restartGame() {
-  clearTimeout(feedbackTimer);
+  clearInterval(interactionTimer);
   clearTimeout(transitionTimer);
+  phase = "INTERACTION";
   sympathy = INITIAL_SYMPATHY;
   trust = INITIAL_TRUST;
+  intimacyTier = "PENDING";
   currentStep = 0;
-  currentState = 1;
   badChoices = 0;
-  previousChoiceWasCompliment = false;
-  lastSympathyChange = 0;
-  lastTrustChange = 0;
+  reaction = 18;
+  speed = "Slow";
+  intensity = "Soft";
+  interactionStep = 0;
+  comboAge = 0;
+  syncBoost = 0;
+  lastChange = "restart";
+  interactionPhaseScene.hidden = false;
+  interactionScene.hidden = true;
+  afterScene.hidden = true;
+  controls.hidden = true;
+  answers.hidden = false;
+  restartButton.hidden = true;
+  dialogue.classList.remove("dialogue--after");
+  phaseLabel.textContent = "Interaction";
   dialogueText.textContent = dialogueSteps[0].line;
-  resultPanel.hidden = true;
-  document.querySelector(".dialogue").classList.remove("dialogue--result");
-  character.classList.remove("character--reaction-good", "character--reaction-bad");
-  sympathyDelta.className = "sympathy__delta";
-  updateStatus();
+  hint.textContent = "Выбери ответ или действие";
+  updateCharacter();
   renderAnswers();
+  updateDebug();
 }
 
+finishButton.addEventListener("click", finishInteraction);
+restartButton.addEventListener("click", restartGame);
 debugToggle.addEventListener("click", () => {
   debugPanel.hidden = !debugPanel.hidden;
   debugToggle.setAttribute("aria-expanded", String(!debugPanel.hidden));
 });
 
-restartButton.addEventListener("click", restartGame);
 restartGame();

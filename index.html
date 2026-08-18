@@ -8,55 +8,56 @@
     <link rel="stylesheet" href="style.css" />
   </head>
   <body>
-    <main class="game" aria-label="Сцена визуальной новеллы">
-      <header class="game__title">VN Prototype</header>
-      <div
-        class="sympathy"
-        role="progressbar"
-        aria-label="Уровень симпатии Alice"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        aria-valuenow="35"
-      >
-        <span class="sympathy__label">Sympathy: <strong>35/100</strong></span>
-        <span class="sympathy__delta" aria-live="polite"></span>
-        <span class="sympathy__track" aria-hidden="true">
-          <span class="sympathy__fill"></span>
-        </span>
-      </div>
+    <main class="game" aria-label="Интерактивная сцена с Alice">
+      <header class="game__title">VN Prototype <span class="phase-label">Interaction</span></header>
 
-      <section class="scene" aria-label="Игровая сцена">
-        <div class="character character--state-1" aria-label="Состояние персонажа">
-          <span>Character</span>
+      <section class="scene scene--interaction" aria-label="Игровая сцена">
+        <div class="character character--state-1" aria-label="Состояние Alice">
+          <span>Character placeholder</span>
           <span class="character__state">State 1 — Distant</span>
         </div>
       </section>
 
+      <section class="interactive-scene" hidden aria-label="Интерактивная сцена">
+        <div class="interactive-placeholder">
+          <span>Interactive scene</span>
+          <strong>Placeholder</strong>
+        </div>
+        <div class="reaction-meter" role="progressbar" aria-label="Reaction" aria-valuemin="0" aria-valuemax="100">
+          <div class="reaction-meter__header"><span>Reaction</span><strong class="reaction-value">0</strong></div>
+          <div class="reaction-meter__track"><span class="reaction-meter__fill"></span></div>
+        </div>
+      </section>
+
+      <section class="after-scene" hidden aria-label="Финальная сцена">
+        <div class="after-placeholder"><span>After scene</span><strong>Placeholder</strong></div>
+      </section>
+
       <section class="dialogue" aria-live="polite">
         <div class="dialogue__name">Alice</div>
-        <p class="dialogue__text">Привет. Я тебя раньше здесь не видела.</p>
-
+        <p class="dialogue__text"></p>
+        <p class="scene-hint">Выбери ответ или действие</p>
         <div class="answers" aria-label="Варианты ответа"></div>
 
-        <div class="result" hidden>
-          <div class="result__sympathy">FINAL SYMPATHY <strong></strong></div>
-          <strong class="result__title"></strong>
-          <p class="result__text"></p>
-          <strong class="result__count"></strong>
-          <div class="rewards" aria-label="Открытые награды">
-            <div class="reward">REWARD 1 <span>LOCKED</span></div>
-            <div class="reward">REWARD 2 <span>LOCKED</span></div>
-            <div class="reward">REWARD 3 <span>LOCKED</span></div>
-            <div class="reward">REWARD 4 <span>LOCKED</span></div>
+        <div class="controls" hidden>
+          <fieldset class="control-group speed-controls">
+            <legend>Speed <strong class="speed-value">Slow</strong></legend>
+          </fieldset>
+          <fieldset class="control-group intensity-controls">
+            <legend>Intensity <strong class="intensity-value">Soft</strong></legend>
+          </fieldset>
+          <div class="interactive-actions">
+            <button class="sync-action" type="button" hidden>Match her rhythm</button>
+            <button class="finish" type="button">Finish</button>
           </div>
-          <button class="restart" type="button">Restart</button>
         </div>
+
+        <button class="restart" type="button" hidden>Restart</button>
       </section>
 
       <button class="debug-toggle" type="button" aria-expanded="false">DEBUG</button>
       <output class="debug-panel" hidden></output>
     </main>
-
     <script src="script.js"></script>
   </body>
 </html>
