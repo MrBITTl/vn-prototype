@@ -21,7 +21,8 @@
       <section class="interactive-scene" hidden aria-label="Интерактивная сцена">
         <div class="interactive-placeholder">
           <span>Interactive scene</span>
-          <strong>Placeholder</strong>
+          <strong class="rhythm-display">Rhythm 1 — Slow</strong>
+          <small>Animation placeholder</small>
         </div>
         <div class="reaction-meter" role="progressbar" aria-label="Reaction" aria-valuemin="0" aria-valuemax="100">
           <div class="reaction-meter__header"><span>Reaction</span><strong class="reaction-value">0</strong></div>
@@ -40,14 +41,10 @@
         <div class="answers" aria-label="Варианты ответа"></div>
 
         <div class="controls" hidden>
-          <fieldset class="control-group speed-controls">
-            <legend>Speed <strong class="speed-value">Slow</strong></legend>
-          </fieldset>
-          <fieldset class="control-group intensity-controls">
-            <legend>Intensity <strong class="intensity-value">Soft</strong></legend>
+          <fieldset class="control-group rhythm-controls">
+            <legend>Rhythm <strong class="rhythm-value">1 — Slow</strong></legend>
           </fieldset>
           <div class="interactive-actions">
-            <button class="sync-action" type="button" hidden>Match her rhythm</button>
             <button class="finish" type="button">Finish</button>
           </div>
         </div>
