@@ -54,8 +54,11 @@ const dialogueSteps = [
 ];
 
 const stateNames = ["Distant", "Interested", "Flirting", "Intimate"];
-const speedOptions = ["Slow", "Medium", "Fast"];
-const intensityOptions = ["Soft", "Normal", "Intense"];
+const rhythmOptions = [
+  { id: 1, name: "Slow", animation: "slow" },
+  { id: 2, name: "Medium", animation: "medium" },
+  { id: 3, name: "Fast", animation: "fast" },
+];
 const $ = (selector) => document.querySelector(selector);
 const dialogue = $(".dialogue");
 const dialogueText = $(".dialogue__text");
@@ -70,9 +73,9 @@ const controls = $(".controls");
 const reactionValue = $(".reaction-value");
 const reactionFill = $(".reaction-meter__fill");
 const reactionMeter = $(".reaction-meter");
-const speedValue = $(".speed-value");
-const intensityValue = $(".intensity-value");
-const syncAction = $(".sync-action");
+const rhythmValue = $(".rhythm-value");
+const rhythmDisplay = $(".rhythm-display");
+const interactionPlaceholder = $(".interactive-placeholder");
 const finishButton = $(".finish");
 const restartButton = $(".restart");
 const phaseLabel = $(".phase-label");
@@ -86,14 +89,14 @@ let intimacyTier;
 let currentStep;
 let badChoices;
 let reaction;
-let speed;
-let intensity;
+let rhythm;
 let interactionStep;
-let lastChange;
+let lastReactionChange;
 let interactionTimer;
 let transitionTimer;
-let comboAge;
-let syncBoost;
+let rhythmTicks;
+let rhythmStartedAt;
+let switchBoost;
 
 const clamp = (value) => Math.max(0, Math.min(100, value));
 
@@ -120,9 +123,9 @@ function updateDebug() {
     `intimacyTier: ${intimacyTier}`,
     `interaction step: ${interactionStep}`,
     `Reaction: ${Math.round(reaction)}`,
-    `Speed: ${speed}`,
-    `Intensity: ${intensity}`,
-    `last change: ${lastChange}`,
+    `current Rhythm: ${rhythm.id} — ${rhythm.name.toUpperCase()}`,
+    `time on current Rhythm: ${((Date.now() - rhythmStartedAt) / 1000).toFixed(1)}s`,
+    `last Reaction change: ${lastReactionChange}`,
   ].join("\n");
 }
 
@@ -152,7 +155,6 @@ function chooseAnswer(reply, sympathyDelta, trustDelta, tag) {
   trust = clamp(trust + trustDelta);
   badChoices += tag === "bad" ? 1 : 0;
   currentStep += 1;
-  lastChange = `sympathy ${sympathyDelta >= 0 ? "+" : ""}${sympathyDelta}, trust ${trustDelta >= 0 ? "+" : ""}${trustDelta}`;
   dialogueText.textContent = reply;
   hint.textContent = "Alice реагирует на твой выбор";
   updateCharacter(sympathyDelta + trustDelta);
@@ -185,72 +187,71 @@ function showEarlyEnding() {
 }
 
 function buildControls() {
-  const makeButtons = (container, values, type) => {
-    container.querySelectorAll("button").forEach((button) => button.remove());
-    values.forEach((value, index) => {
-      const button = document.createElement("button");
-      button.type = "button";
-      button.textContent = value;
-      button.dataset.value = value;
-      const unlocked = intimacyTier === "HIGH" || (intimacyTier === "MEDIUM" && (type === "speed" || index < 2)) || (intimacyTier === "LOW" && index < 2);
-      button.disabled = !unlocked;
-      button.addEventListener("click", () => setControl(type, value));
-      container.append(button);
-    });
-  };
-  makeButtons($(".speed-controls"), speedOptions, "speed");
-  makeButtons($(".intensity-controls"), intensityOptions, "intensity");
-  syncAction.hidden = intimacyTier !== "HIGH";
+  const container = $(".rhythm-controls");
+  container.querySelectorAll("button").forEach((button) => button.remove());
+  rhythmOptions.forEach((option) => {
+    const button = document.createElement("button");
+    button.type = "button";
+    button.textContent = `${option.id} — ${option.name.toUpperCase()}`;
+    button.dataset.rhythm = String(option.id);
+    const unlocked = intimacyTier !== "LOW" || option.id < 3;
+    button.disabled = !unlocked;
+    button.title = unlocked ? `Rhythm ${option.id}: ${option.name}` : "Недоступно при LOW intimacy";
+    button.addEventListener("click", () => setRhythm(option.id));
+    container.append(button);
+  });
   updateControlButtons();
 }
 
-function setControl(type, value) {
-  const oldValue = type === "speed" ? speed : intensity;
-  if (oldValue === value) return;
-  if (type === "speed") speed = value;
-  else intensity = value;
-  comboAge = 0;
+function setRhythm(id) {
+  const next = rhythmOptions[id - 1];
+  const button = $(`.rhythm-controls button[data-rhythm="${id}"]`);
+  if (!next || next === rhythm || button?.disabled) return;
+  const oldRhythm = rhythm;
+  rhythm = next;
+  rhythmTicks = 0;
+  rhythmStartedAt = Date.now();
+  switchBoost = oldRhythm && Math.abs(oldRhythm.id - rhythm.id) === 1 ? 0.8 : 0.35;
   interactionStep += 1;
-  lastChange = `${type}: ${oldValue} → ${value}`;
-  const tooSoon = interactionStep < 3 && (speed === "Fast" || intensity === "Intense");
-  dialogueText.textContent = tooSoon ? "Не спеши…" : interactionStep > 5 ? "Да, меняй ритм." : "Так лучше. Продолжай.";
+  if (reaction < 35 && rhythm.id === 3) dialogueText.textContent = "Не так быстро…";
+  else if (reaction >= 65 && rhythm.id === 1) dialogueText.textContent = "Можно смелее.";
+  else dialogueText.textContent = rhythm.id === 1 ? "Мне нравится эта пауза." : rhythm.id === 2 ? "Вот так, ровнее." : "Да. Теперь быстрее.";
   updateControlButtons();
   updateDebug();
 }
 
 function updateControlButtons() {
-  speedValue.textContent = speed;
-  intensityValue.textContent = intensity;
-  document.querySelectorAll(".control-group button").forEach((button) => {
-    const selected = button.dataset.value === speed || button.dataset.value === intensity;
+  const label = `${rhythm.id} — ${rhythm.name.toUpperCase()}`;
+  rhythmValue.textContent = label;
+  rhythmDisplay.textContent = `RHYTHM ${label}`;
+  interactionPlaceholder.className = `interactive-placeholder rhythm--${rhythm.animation}`;
+  document.querySelectorAll(".rhythm-controls button").forEach((button) => {
+    const selected = Number(button.dataset.rhythm) === rhythm.id;
     button.classList.toggle("is-active", selected);
     button.setAttribute("aria-pressed", String(selected));
   });
 }
 
 function reactionRate() {
-  const s = speedOptions.indexOf(speed);
-  const i = intensityOptions.indexOf(intensity);
-  const progress = interactionStep + comboAge / 4;
-  let rate;
-  if (progress < 3) rate = s === 0 && i === 0 ? 1.8 : s + i >= 3 ? -2.4 : 0.5;
-  else if (progress < 7) rate = s === 1 && i === 1 ? 2.2 : Math.abs(s - i) > 1 ? -1.2 : 0.65;
-  else rate = s === 2 && i >= 1 ? 1.65 : s === 1 && i === 2 ? 1.3 : 0.25;
-  if (comboAge > 7) rate -= (comboAge - 7) * 0.32;
-  return rate + syncBoost;
+  let rates;
+  if (reaction < 35) rates = [1.55, 0.45, -1.15];
+  else if (reaction < 65) rates = [0.35, 1.65, 0.9];
+  else rates = [0.15, 0.75, 1.55];
+  const repetitionPenalty = Math.max(0, rhythmTicks - 6) * 0.28;
+  return rates[rhythm.id - 1] - repetitionPenalty + switchBoost;
 }
 
 function tickInteraction() {
   const oldReaction = reaction;
   reaction = clamp(reaction + reactionRate());
-  comboAge += 1;
-  syncBoost = Math.max(0, syncBoost - 0.12);
+  rhythmTicks += 1;
+  switchBoost = Math.max(0, switchBoost - 0.2);
   reactionValue.textContent = Math.round(reaction);
   reactionFill.style.width = `${reaction}%`;
   reactionMeter.setAttribute("aria-valuenow", String(Math.round(reaction)));
   const delta = reaction - oldReaction;
-  if (comboAge === 6) dialogueText.textContent = delta > 0 ? "Не останавливайся…" : "Попробуй иначе.";
-  lastChange = `Reaction ${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
+  if (rhythmTicks === 7) dialogueText.textContent = delta > 0.4 ? "Ещё немного…" : "Смени ритм.";
+  lastReactionChange = `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
   updateDebug();
 }
 
@@ -263,23 +264,11 @@ function startInteractivePhase() {
   controls.hidden = false;
   phaseLabel.textContent = "Interactive";
   dialogueText.textContent = "Начни медленно. Я подскажу.";
-  hint.textContent = "Меняй ритм — одна комбинация наскучит";
+  hint.textContent = "1 / 2 / 3 — меняй Rhythm, если Alice теряет интерес";
   buildControls();
   tickInteraction();
   interactionTimer = setInterval(tickInteraction, 900);
 }
-
-syncAction.addEventListener("click", () => {
-  if (syncAction.disabled) return;
-  syncBoost = 1.5;
-  comboAge = 0;
-  interactionStep += 1;
-  lastChange = "Match her rhythm: boost";
-  dialogueText.textContent = "Вот так. Чувствуешь?";
-  syncAction.disabled = true;
-  setTimeout(() => { syncAction.disabled = false; }, 4500);
-  updateDebug();
-});
 
 function finishInteraction() {
   clearInterval(interactionTimer);
@@ -300,7 +289,6 @@ function finishInteraction() {
     dialogueText.textContent = "В следующий раз — не спеши.";
     hint.textContent = "Alice мягко отстраняется.";
   }
-  lastChange = `Finish at Reaction ${Math.round(reaction)}`;
   updateDebug();
 }
 
@@ -314,12 +302,12 @@ function restartGame() {
   currentStep = 0;
   badChoices = 0;
   reaction = 18;
-  speed = "Slow";
-  intensity = "Soft";
+  rhythm = rhythmOptions[0];
   interactionStep = 0;
-  comboAge = 0;
-  syncBoost = 0;
-  lastChange = "restart";
+  rhythmTicks = 0;
+  rhythmStartedAt = Date.now();
+  switchBoost = 0;
+  lastReactionChange = "+0.0";
   interactionPhaseScene.hidden = false;
   interactionScene.hidden = true;
   afterScene.hidden = true;
@@ -337,6 +325,10 @@ function restartGame() {
 
 finishButton.addEventListener("click", finishInteraction);
 restartButton.addEventListener("click", restartGame);
+document.addEventListener("keydown", (event) => {
+  if (phase !== "INTERACTIVE" || event.repeat || !["1", "2", "3"].includes(event.key)) return;
+  setRhythm(Number(event.key));
+});
 debugToggle.addEventListener("click", () => {
   debugPanel.hidden = !debugPanel.hidden;
   debugToggle.setAttribute("aria-expanded", String(!debugPanel.hidden));
