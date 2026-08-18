@@ -11,12 +11,15 @@
     <main class="game" aria-label="Интерактивная сцена с Alice">
       <header class="game__title">VN Prototype <span class="phase-label">Interaction</span></header>
 
-      <section class="scene scene--interaction" aria-label="Игровая сцена">
-        <div class="character character--state-1" aria-label="Состояние Alice">
-          <span>Character placeholder</span>
-          <span class="character__state">State 1 — Distant</span>
+      <div class="scene-art" aria-hidden="true">
+        <img class="scene-art__background" src="assets/room.png" alt="" />
+        <div class="character character--state-1">
+          <img class="character__image" src="assets/maya_distant.png" alt="" />
+          <span class="character__state visually-hidden">State 1 — Distant</span>
         </div>
-      </section>
+      </div>
+
+      <section class="scene scene--interaction" aria-label="Игровая сцена"></section>
 
       <section class="interactive-scene" hidden aria-label="Интерактивная сцена">
         <div class="interactive-placeholder">
