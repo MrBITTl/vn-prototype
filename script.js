@@ -129,13 +129,14 @@ function calculateTier() {
 
 function updateDebug() {
   debugPanel.textContent = [
-    `state: ${phase}`,
+    `machine state: ${phase}`,
+    `climaxTriggered: ${climaxTriggered}`,
     `phase: ${phase}`,
     `sympathy: ${sympathy}`,
     `trust: ${trust}`,
     `intimacyTier: ${intimacyTier}`,
     `interaction step: ${interactionStep}`,
-    `Reaction: ${Math.round(reaction)}`,
+    `Reaction: ${reaction.toFixed(2)}`,
     `current Rhythm: ${rhythm.id} — ${rhythm.name.toUpperCase()}`,
     `time on current Rhythm: ${((Date.now() - rhythmStartedAt) / 1000).toFixed(1)}s`,
     `last Reaction change: ${lastReactionChange}`,
@@ -258,15 +259,21 @@ function reactionRate() {
 function tickInteraction() {
   if (phase !== "INTERACTIVE") return;
   const oldReaction = reaction;
-  reaction = clamp(reaction + reactionRate());
+  const nextReaction = reaction + reactionRate();
+  reaction = nextReaction >= 100 ? 100 : clamp(nextReaction);
   rhythmTicks += 1;
   switchBoost = Math.max(0, switchBoost - 0.2);
-  reactionValue.textContent = Math.round(reaction);
+  // Do not show a rounded 100 before the actual value has reached the goal.
+  reactionValue.textContent = reaction >= 100 ? "100" : String(Math.floor(reaction));
   reactionFill.style.width = `${reaction}%`;
-  reactionMeter.setAttribute("aria-valuenow", String(Math.round(reaction)));
+  reactionMeter.setAttribute("aria-valuenow", reaction.toFixed(2));
   const delta = reaction - oldReaction;
   if (rhythmTicks === 7) dialogueText.textContent = delta > 0.4 ? "Ещё немного…" : "Смени ритм.";
   lastReactionChange = `${delta >= 0 ? "+" : ""}${delta.toFixed(1)}`;
+  if (reaction >= 100) {
+    startClimax();
+    return;
+  }
   updateDebug();
   if (reaction >= 100) startClimax();
 }
@@ -282,19 +289,24 @@ function startInteractivePhase() {
   dialogueText.textContent = "Начни медленно. Я подскажу.";
   hint.textContent = "1 / 2 / 3 — меняй Rhythm, если Alice теряет интерес";
   buildControls();
-  tickInteraction();
   interactionTimer = setInterval(tickInteraction, 900);
+  tickInteraction();
 }
 
 function startClimax() {
   if (phase !== "INTERACTIVE" || climaxTriggered) return;
   climaxTriggered = true;
   clearInterval(interactionTimer);
+  interactionTimer = null;
   reaction = 100;
   reactionValue.textContent = "100";
   reactionFill.style.width = "100%";
   reactionMeter.setAttribute("aria-valuenow", "100");
   phase = "CLIMAX";
+  document.querySelectorAll(".rhythm-controls button").forEach((button) => {
+    button.disabled = true;
+    button.setAttribute("aria-disabled", "true");
+  });
   controls.hidden = true;
   interactionScene.hidden = true;
   climaxScene.hidden = false;
