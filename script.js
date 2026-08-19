@@ -72,7 +72,7 @@ const hint = $(".scene-hint");
 const answers = $(".answers");
 const character = $(".character");
 const characterState = $(".character__state");
-const characterImages = [...document.querySelectorAll(".character__image")];
+const characterFrames = [...document.querySelectorAll(".character__frame")];
 const interactionScene = $(".interactive-scene");
 const interactionPhaseScene = $(".scene--interaction");
 const afterScene = $(".after-scene");
@@ -158,9 +158,11 @@ function updateCharacter(change = 0) {
   characterState.textContent = `State ${state} — ${stateNames[state - 1]}`;
   if (state !== displayedCharacterState) {
     const nextImage = activeSceneImage === 0 ? 1 : 0;
-    characterImages[nextImage].src = stateImages[state - 1];
-    characterImages[nextImage].classList.add("is-active");
-    characterImages[activeSceneImage].classList.remove("is-active");
+    characterFrames[nextImage].querySelectorAll("img").forEach((image) => {
+      image.src = stateImages[state - 1];
+    });
+    characterFrames[nextImage].classList.add("is-active");
+    characterFrames[activeSceneImage].classList.remove("is-active");
     activeSceneImage = nextImage;
     displayedCharacterState = state;
   }
@@ -398,9 +400,11 @@ function restartGame() {
   lastReactionChange = "+0.0";
   displayedCharacterState = 1;
   activeSceneImage = 0;
-  characterImages[0].src = stateImages[0];
-  characterImages[0].classList.add("is-active");
-  characterImages[1].classList.remove("is-active");
+  characterFrames[0].querySelectorAll("img").forEach((image) => {
+    image.src = stateImages[0];
+  });
+  characterFrames[0].classList.add("is-active");
+  characterFrames[1].classList.remove("is-active");
   interactionPhaseScene.hidden = false;
   interactionScene.hidden = true;
   afterScene.hidden = true;
