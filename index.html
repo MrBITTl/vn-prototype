@@ -12,11 +12,16 @@
       <header class="game__title">VN Prototype <span class="phase-label">Interaction</span></header>
 
       <div class="scene-art" aria-hidden="true">
-        <img class="scene-art__background" src="assets/room.png" alt="" />
         <div class="character character--state-1">
-          <img class="character__image" src="assets/maya_distant.png" alt="" />
+          <img class="character__image is-active" src="assets/scene_distant.png" alt="" />
+          <img class="character__image" src="assets/scene_distant.png" alt="" />
           <span class="character__state visually-hidden">State 1 — Distant</span>
         </div>
+      </div>
+
+      <div class="reaction-meter" role="progressbar" aria-label="Удовольствие" aria-valuemin="0" aria-valuemax="100">
+        <div class="reaction-meter__header"><span>Удовольствие</span><strong class="reaction-value">0</strong></div>
+        <div class="reaction-meter__track"><span class="reaction-meter__fill"></span></div>
       </div>
 
       <section class="scene scene--interaction" aria-label="Игровая сцена"></section>
@@ -26,10 +31,6 @@
           <span>Interactive scene</span>
           <strong class="rhythm-display">Rhythm 1 — Slow</strong>
           <small>Animation placeholder</small>
-        </div>
-        <div class="reaction-meter" role="progressbar" aria-label="Reaction" aria-valuemin="0" aria-valuemax="100">
-          <div class="reaction-meter__header"><span>Reaction</span><strong class="reaction-value">0</strong></div>
-          <div class="reaction-meter__track"><span class="reaction-meter__fill"></span></div>
         </div>
       </section>
 
