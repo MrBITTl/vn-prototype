@@ -54,6 +54,12 @@ const dialogueSteps = [
 ];
 
 const stateNames = ["Distant", "Interested", "Flirting", "Intimate"];
+const stateImages = [
+  "assets/scene_distant.png",
+  "assets/scene_interested.png",
+  "assets/scene_flirting.png",
+  "assets/scene_intimate.png",
+];
 const rhythmOptions = [
   { id: 1, name: "Slow", animation: "slow" },
   { id: 2, name: "Medium", animation: "medium" },
@@ -66,6 +72,7 @@ const hint = $(".scene-hint");
 const answers = $(".answers");
 const character = $(".character");
 const characterState = $(".character__state");
+const characterImages = [...document.querySelectorAll(".character__image")];
 const interactionScene = $(".interactive-scene");
 const interactionPhaseScene = $(".scene--interaction");
 const afterScene = $(".after-scene");
@@ -102,6 +109,8 @@ let rhythmStartedAt;
 let switchBoost;
 let epilogueStep;
 let climaxTriggered;
+let activeSceneImage = 0;
+let displayedCharacterState = 1;
 
 const epilogueLines = [
   ["Alice", "Вот теперь можно просто немного помолчать."],
@@ -147,7 +156,16 @@ function updateCharacter(change = 0) {
   const state = calculateState();
   character.className = `character character--state-${state}`;
   characterState.textContent = `State ${state} — ${stateNames[state - 1]}`;
+  if (state !== displayedCharacterState) {
+    const nextImage = activeSceneImage === 0 ? 1 : 0;
+    characterImages[nextImage].src = stateImages[state - 1];
+    characterImages[nextImage].classList.add("is-active");
+    characterImages[activeSceneImage].classList.remove("is-active");
+    activeSceneImage = nextImage;
+    displayedCharacterState = state;
+  }
   if (change) {
+    void character.offsetWidth;
     character.classList.add(change > 0 ? "character--reaction-good" : "character--reaction-bad");
   }
 }
@@ -367,6 +385,9 @@ function restartGame() {
   currentStep = 0;
   badChoices = 0;
   reaction = 18;
+  reactionValue.textContent = "18";
+  reactionFill.style.width = "18%";
+  reactionMeter.setAttribute("aria-valuenow", "18");
   rhythm = rhythmOptions[0];
   interactionStep = 0;
   rhythmTicks = 0;
@@ -375,6 +396,11 @@ function restartGame() {
   epilogueStep = 0;
   climaxTriggered = false;
   lastReactionChange = "+0.0";
+  displayedCharacterState = 1;
+  activeSceneImage = 0;
+  characterImages[0].src = stateImages[0];
+  characterImages[0].classList.add("is-active");
+  characterImages[1].classList.remove("is-active");
   interactionPhaseScene.hidden = false;
   interactionScene.hidden = true;
   afterScene.hidden = true;
